@@ -1,0 +1,27 @@
+# Every experiment number lives here. Change this file, not the code.
+root: data
+modality: s1          # s1 | s2 | both
+batch_size: 4
+num_workers: 2
+
+num_classes: 2
+width: 32             # 16 if you run out of GPU memory
+depth: 4
+
+epochs: 30
+lr: 0.001
+weight_decay: 0.0001
+dice_weight: 0.5
+class_weights: [1.0, 5.0]   # water is rare, so weight it up
+amp: true
+
+# distillation only
+alpha: 1.0            # response KD weight   (0 = off)
+beta: 1.0             # pair-wise KD weight  (0 = off)
+temperature: 4.0
+gate_threshold: 0.0   # 0 = no confidence gating; try 0.7
+teacher_ckpt: runs/teacher_s2/best.pt
+
+seed: 42
+out_dir: runs/exp
+device: auto

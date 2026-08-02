@@ -1,0 +1,30 @@
+# Data (downloaded chips, ~14 GB)
+data/
+
+# Experiment outputs: keep the reproducibility trail, drop the weights
+runs/**
+!runs/
+!runs/*/
+!runs/*/log.csv
+!runs/*/config.json
+*.pt
+*.pth
+*.ckpt
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
