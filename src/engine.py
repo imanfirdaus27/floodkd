@@ -112,14 +112,19 @@ def train_one_epoch_distill(ts_model, loader, distill_loss, optimizer, device, s
         y = batch['label'].to(device, non_blocking=True)
         optimizer.zero_grad(set_to_none=True)
 
-        s_logits, s_feat, t_logits, t_feat = ts_model(s1, s2)
-        parts = distill_loss(s_logits, t_logits, y, s_feat, t_feat)
-
+        # Mixed precision has to wrap the forward pass, not only the backward.
+        # Without this the two networks run in fp32 while cfg.amp says otherwise,
+        # which is both slower and, on a 4 GB card, out of memory.
         if scaler is not None:
+            with torch.autocast(device_type=device.split(':')[0], dtype=torch.float16):
+                s_logits, s_feat, t_logits, t_feat = ts_model(s1, s2)
+                parts = distill_loss(s_logits, t_logits, y, s_feat, t_feat)
             scaler.scale(parts['total']).backward()
             scaler.step(optimizer)
             scaler.update()
         else:
+            s_logits, s_feat, t_logits, t_feat = ts_model(s1, s2)
+            parts = distill_loss(s_logits, t_logits, y, s_feat, t_feat)
             parts['total'].backward()
             optimizer.step()
 
@@ -159,8 +164,18 @@ def fit(model, train_loader, val_loader, loss_fn, optimizer, device, cfg,
                'val_miou': round(val['miou'], 5),
                'val_f1': round(val['f1'], 5),
                'secs': round(time.time() - t0, 1)}
+        # The distillation run computes three separate losses and then throws
+        # two of them away, which makes it impossible to see which one is
+        # dominating. Record them.
+        extra = ''
+        if is_distill:
+            for part in ('seg', 'response', 'pairwise'):
+                if part in tr:
+                    row[f'loss_{part}'] = round(tr[part], 5)
+                    extra += f'  {part} {tr[part]:.3f}'
+
         logger.log(row)
-        print(f"epoch {epoch:>3}/{cfg.epochs}  loss {train_loss:.4f}  "
+        print(f"epoch {epoch:>3}/{cfg.epochs}  loss {train_loss:.4f}{extra}  "
               f"val IoU(water) {val['iou_water']:.4f}  F1 {val['f1']:.4f}  "
               f"({row['secs']}s)")
 

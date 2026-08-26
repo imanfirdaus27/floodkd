@@ -1,0 +1,26 @@
+{
+  "root": "data",
+  "modality": "s1",
+  "batch_size": 4,
+  "num_workers": 2,
+  "num_classes": 2,
+  "width": 32,
+  "depth": 4,
+  "epochs": 30,
+  "lr": 0.001,
+  "weight_decay": 0.0001,
+  "dice_weight": 0.5,
+  "class_weights": [
+    1.0,
+    5.0
+  ],
+  "amp": true,
+  "alpha": 1.0,
+  "beta": 0.1,
+  "temperature": 4.0,
+  "gate_threshold": 0.7,
+  "teacher_ckpt": "runs/teacher_s2/best.pt",
+  "seed": 42,
+  "out_dir": "runs/student_kd_v2",
+  "device": "auto"
+}

@@ -1,5 +1,8 @@
-# Data (downloaded chips, ~14 GB)
+# Data (downloaded chips and archives)
 data/
+
+# Cache written by scripts/fetch_s1s2.py while indexing the Zenodo parts
+.s1s2_index.json
 
 # Experiment outputs: keep the reproducibility trail, drop the weights
 runs/**
